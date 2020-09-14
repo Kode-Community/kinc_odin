@@ -2,7 +2,12 @@ package kinc;
 
 import _c "core:c"
 
-foreign import kinc "../../kinc/Kinc.lib"
+when ODIN_OS == "windows" {
+	foreign import kinc "../../kinc_windows/Kinc.lib"
+} else {
+	//for some reason linux paths are handles from compile directory, I guess
+	foreign import kinc "kinc_linux/Kinc.so"
+};
 
 
 /*
@@ -300,15 +305,8 @@ foreign kinc {
 	// keyboard.h
 	//
 	// -----------------------------------------------------------------------------
-	keyboard_show :: proc() ---;
-	keyboard_hide :: proc() ---;
-	keyboard_active :: proc() -> _c.bool;
+	//keyboard_show :: proc() ---;
+	//keyboard_hide :: proc() ---;
+	//keyboard_active :: proc() -> _c.bool;
 
-	keyboard_key_down_callback: Key_Down_Callback;
-	keyboard_key_up_callback: 
-	keyboard_key_press_callback: proc(character: _c.uint);
-
-	internal_keyboard_trigger_key_down :: proc(key: _c.int) ---;
-	internal_keyboard_trigger_key_up :: proc(key: _c.int) ---;
-	internal_keyboard_trigger_key_press :: proc(character: _c.uint);
 }

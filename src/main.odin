@@ -137,7 +137,8 @@ fixed_update :: proc(dt: f64) {
 main :: proc() {
 	kinc.init("Hello from Odin!", 1280, 800, nil, nil);
 
-	kinc.window_change_features(0, kinc.WINDOW_FEATURE_MINIMIZABLE);
+	kinc.window_show(0);
+	//kinc.window_change_features(0, kinc.WINDOW_FEATURE_MINIMIZABLE);
 
 
 	frame_time = new(Frame_Time);
