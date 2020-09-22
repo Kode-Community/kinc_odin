@@ -5,7 +5,9 @@ import "core:runtime"
 import "core:math"
 import "core:time"
 import "core:strconv"
+import "core:strings"
 import "core:mem"
+import "core:os"
 
 import "kinc"
 
@@ -89,6 +91,7 @@ internal_update :: proc "c" () {
 		accumulator -= dt;
 	}
 	//draw
+	render();
 
 	ft_stop(frame_time);
 	ft_sleep(frame_time, 1.0/60.0);
@@ -96,10 +99,39 @@ internal_update :: proc "c" () {
 	pfps = fps_calc(pfps, frame_time^);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+render :: proc() {
+	kinc.g4_begin(0);
+	kinc.g4_clear(kinc.CLEAR_COLOR, kinc.WHITE, 0.0, 0);
+
+	kinc.g4_set_pipeline(&pipeline);
+	kinc.g4_set_vertex_buffer(&vertices);
+	kinc.g4_set_index_buffer(&indices);
+	kinc.g4_draw_indexed_vertices();
+
+	kinc.g4_end(0);
+	kinc.g4_swap_buffers();
+}
+
+
+VS_SRC := #load("simple.vert.glsl");
+FS_SRC := #load("simple.frag.glsl");
+
+pipeline: kinc.Pipeline = ---;
+vertices: kinc.Vertex_Buffer = ---;
+indices: kinc.Index_Buffer = ---;
 init :: proc() {
-	// window.h
-	window: i32;
-	window_mode := kinc.window_get_mode(window);
 
 	// image.h
 	size := kinc.image_size_from_file("assets/tileset.png");
@@ -107,16 +139,59 @@ init :: proc() {
 
 	image: kinc.Image;
 	if kinc.image_init_from_file(&image, data, "assets/tileset.png") != 0 {
-		fmt.println(image);
+		//fmt.println(image);
+		//loaded image
 	}
 
-	// display.h
-	display := kinc.primary_display();
-	display_info := kinc.display_current_mode(display);
 
-	// color.h
-	r, g, b, a: f32;
-	kinc.color_components(kinc.GREEN, &r, &g, &b, &a);
+	vertex_shader: kinc.Shader;
+	kinc.g4_shader_init(&vertex_shader, &VS_SRC[0], auto_cast len(VS_SRC), .VERTEX);
+	fragment_shader: kinc.Shader;
+	kinc.g4_shader_init(&fragment_shader, &FS_SRC[0], auto_cast len(FS_SRC), .FRAGMENT);
+
+	structure: kinc.Vertex_Structure = ---;
+	kinc.g4_vertex_structure_init(&structure);
+	kinc.g4_vertex_structure_add(&structure, "pos", .FLOAT3);
+
+	kinc.g4_pipeline_init(&pipeline);
+	pipeline.vertex_shader = &vertex_shader;
+	pipeline.fragment_shader = &fragment_shader;
+	pipeline.input_layout[0] = &structure;
+	pipeline.input_layout[1] = nil;
+	kinc.g4_pipeline_compile(&pipeline);
+
+	kinc.g4_vertex_buffer_init(&vertices, 3, &structure, .STATIC, 0);
+	v := kinc.g4_vertex_buffer_lock_all(&vertices);
+	{
+		mem.ptr_offset(v, 0)^ = -1;
+		mem.ptr_offset(v, 1)^ = -1;
+		mem.ptr_offset(v, 2)^ = 0.5;
+		mem.ptr_offset(v, 3)^ = 1;
+		mem.ptr_offset(v, 4)^ = -1;
+		mem.ptr_offset(v, 5)^ = 0.5;
+		mem.ptr_offset(v, 6)^ = -1;
+		mem.ptr_offset(v, 7)^ = 1;
+		mem.ptr_offset(v, 8)^ = 0.5;
+		kinc.g4_vertex_buffer_unlock_all(&vertices);
+	}
+
+	kinc.g4_index_buffer_init(&indices, 3, .FORMAT_32BIT);
+	i := kinc.g4_index_buffer_lock(&indices);
+	{
+		mem.ptr_offset(i, 0)^ = 0;
+		mem.ptr_offset(i, 1)^ = 1;
+		mem.ptr_offset(i, 2)^ = 2;
+		kinc.g4_index_buffer_unlock(&indices);
+	}
+
+	kinc.keyboard_key_down_callback = key_up;
+
+}
+
+key_up :: proc "c" (p: i32) {
+	context = runtime.default_context();
+
+	
 }
 
 update :: proc(dt: f64) {
@@ -126,6 +201,16 @@ update :: proc(dt: f64) {
 fixed_update :: proc(dt: f64) {
 	/* fmt.println(pfps.fps); */
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

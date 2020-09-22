@@ -1,1 +1,1 @@
-~/projects/Odin/odin run src/main.odin -out=bin/main
+~/projects/Odin/odin build src/main.odin -out=bin/main

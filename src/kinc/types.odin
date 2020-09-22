@@ -2,6 +2,14 @@ package kinc;
 
 import _c "core:c"
 
+Graphics_Api :: enum {
+	DX9,
+	DX11,
+	GL,
+}
+
+GRAPHICS_API :: Graphics_Api.GL;
+
 // -----------------------------------------------------------------------------
 //
 // window.h
@@ -19,7 +27,7 @@ WINDOW_FEATURE_MAXIMIZABLE: _c.int: 4;
 WINDOW_FEATURE_BORDERLESS:  _c.int: 8;
 WINDOW_FEATURE_ON_TOP:      _c.int: 16;
 
-Window_Options :: struct #packed {
+Window_Options :: struct  {
 	title: cstring,
 
 	x: _c.int,
@@ -33,7 +41,7 @@ Window_Options :: struct #packed {
 	mode: Window_Mode,
 }
 
-Framebuffer_Options :: struct #packed {
+Framebuffer_Options :: struct  {
 	frequency: _c.int,
 	vertical_sync: _c.bool,
 	color_bits: _c.int,
@@ -63,7 +71,7 @@ Image_Format :: enum _c.int {
 	A16
 }
 
-Image :: struct #packed {
+Image :: struct  {
 	width: _c.int,
 	height: _c.int,
 	depth: _c.int,
@@ -74,7 +82,7 @@ Image :: struct #packed {
 	data_size: _c.int,
 }
 
-Image_Read_Callbacks :: struct #packed {
+Image_Read_Callbacks :: struct  {
 	read: proc "c" (user_data: rawptr, data: rawptr, size: _c.size_t) -> _c.int,
 	seek: proc "c" (user_data: rawptr, pos: _c.int),
 	pos: proc "c" (user_data: rawptr) -> _c.int,
@@ -87,7 +95,7 @@ Image_Read_Callbacks :: struct #packed {
 //
 // -----------------------------------------------------------------------------
 
-Display_Mode :: struct #packed {
+Display_Mode :: struct  {
 	x: _c.int,
 	y: _c.int,
 	width: _c.int,
@@ -115,7 +123,7 @@ CYAN :: 0xff00ffff;
 // socket.h
 //
 // -----------------------------------------------------------------------------
-Socket :: struct #packed {
+Socket :: struct  {
 	handle: _c.int,
 }
 // -----------------------------------------------------------------------------
@@ -135,13 +143,13 @@ Http_Callback :: proc "c" (error: _c.int, response: _c.int, body: string, callba
 // audio2.h
 //
 // -----------------------------------------------------------------------------
-Audio2_Buffer_Format :: struct #packed {
+Audio2_Buffer_Format :: struct  {
 	channels: _c.int,
 	samples_per_second: _c.int,
 	bits_per_sample: _c.int,
 }
 
-Audio2_Buffer :: struct #packed {
+Audio2_Buffer :: struct  {
 	format: Audio2_Buffer_Format,
 	data: ^u8, // uint8_t
 	data_size: _c.int,
@@ -167,7 +175,7 @@ Tracked_Device :: enum _c.int {
 	VIVE_TRACKER,
 }
 
-Vr_Pose :: struct #packed {
+Vr_Pose :: struct  {
 	orientation: Quaternion,
 	position: Vector3,
 
@@ -180,7 +188,7 @@ Vr_Pose :: struct #packed {
 	top: _c.float,
 }
 
-Vr_Pos_State :: struct #packed {
+Vr_Pos_State :: struct  {
 	vr_pos: Vr_Pose,
 	angular_velocity: Vector3,
 	linear_velocity: Vector3,
@@ -197,7 +205,7 @@ Vr_Pos_State :: struct #packed {
 	should_recenter: _c.bool,
 }
 
-Vr_Sensor_State :: struct #packed {
+Vr_Sensor_State :: struct  {
 	pose: Vr_Pos_State,
 }
 // -----------------------------------------------------------------------------
@@ -205,16 +213,16 @@ Vr_Sensor_State :: struct #packed {
 // vector.h
 //
 // -----------------------------------------------------------------------------
-Vector2 :: struct #packed {
+Vector2 :: struct  {
 	x: _c.float,
 	y: _c.float,
 }
-Vector3 :: struct #packed {
+Vector3 :: struct  {
 	x: _c.float,
 	y: _c.float,
 	z: _c.float,
 }
-Vector4 :: struct #packed {
+Vector4 :: struct  {
 	x: _c.float,
 	y: _c.float,
 	z: _c.float,
@@ -225,11 +233,11 @@ Vector4 :: struct #packed {
 // matrix.h
 //
 // -----------------------------------------------------------------------------
-Matrix3x3 :: struct #packed {
+Matrix3x3 :: struct  {
 	m: [9] _c.float,
 }
 
-Matrix4x4 :: struct #packed {
+Matrix4x4 :: struct  {
 	m: [16] _c.float,
 }
 // -----------------------------------------------------------------------------
@@ -237,7 +245,7 @@ Matrix4x4 :: struct #packed {
 // quaternion.h
 //
 // -----------------------------------------------------------------------------
-Quaternion :: struct #packed {
+Quaternion :: struct  {
 	x: _c.float,
 	y: _c.float,
 	z: _c.float,
@@ -261,7 +269,7 @@ KINC_TAU :: 6.283185307;
 // filewriter.h
 //
 // -----------------------------------------------------------------------------
-File_Writer :: struct #packed {
+File_Writer :: struct  {
 	file: rawptr,
 	filename: cstring,
 	mounted: _c.bool,
@@ -275,7 +283,7 @@ File_Writer :: struct #packed {
 // i didn't port it :)
 FILE_TYPE_ASSET :: 0;
 FILE_TYPE_SAVE :: 1;
-File_Reader :: struct #packed {
+File_Reader :: struct  {
 	file: rawptr,
 	size: _c.int,
 	type: _c.int,
@@ -475,6 +483,328 @@ KEY_ZOOM               :: 251;
 KEY_PA1                :: 253;
 KEY_WIN_OEM_CLEAR      :: 254;
 
-Key_Down_Callback :: proc(key: _c.int);
-Key_Up_Callback :: proc(key: _c.int);
-Key_Press_Callback :: proc(character: _c.uint);
+Key_Down_Callback :: proc "c" (key: _c.int);
+Key_Up_Callback :: proc "c" (key: _c.int);
+Key_Press_Callback :: proc "c" (character: _c.uint);
+
+// -----------------------------------------------------------------------------
+//
+// graphics4.h
+//
+// -----------------------------------------------------------------------------
+CLEAR_COLOR :: 1;
+CLEAR_DEPTH :: 2;
+CLEAR_STENCIL :: 4;
+
+Texture_Addressing :: enum _c.int {
+	REPEAT,
+	MIRROR,
+	CLAMP,
+	BORDER,
+}
+
+Texture_Direction :: enum _c.int {
+	U, V, W
+}
+
+Texture_Operation :: enum _c.int {
+	MODULATE,
+	SELECT_FIRST,
+	SELECT_SECOND,
+}
+Texture_Argument :: enum _c.int {
+	CURRENT_COLOR,
+	TEXTURE_COLOR,
+}
+Texture_Filter :: enum _c.int {
+	POINT,
+	LINEAR,
+	ANISOTROPIC,
+}
+
+Mipmap_Filter :: enum _c.int {
+	NONE,
+	POINT,
+	LINEAR,
+}
+// -----------------------------------------------------------------------------
+//
+// textureunit.h
+//
+// -----------------------------------------------------------------------------
+Texture_Unit :: struct  {
+	impl: Texture_Unit_Impl,
+}
+// -----------------------------------------------------------------------------
+//
+// constantlocatioin.h
+//
+// -----------------------------------------------------------------------------
+Constant_Location :: struct  {
+	impl: Constant_Location_Impl,
+}
+// -----------------------------------------------------------------------------
+//
+// indexbuffer.h
+//
+// -----------------------------------------------------------------------------
+Index_Buffer_Format :: enum _c.int {
+	FORMAT_32BIT,
+	FORMAT_16BIT,
+
+}
+Index_Buffer :: struct  {
+	impl: Index_Buffer_Impl,
+}
+// -----------------------------------------------------------------------------
+//
+// vertexbuffer.h
+//
+// -----------------------------------------------------------------------------
+Vertex_Buffer :: struct  {
+	impl: Vertex_Buffer_Impl,
+}
+
+Usage :: enum _c.int {
+	STATIC,
+	DYNAMIC,
+	READABLE,
+}
+// -----------------------------------------------------------------------------
+//
+// vertexstructure.h
+//
+// -----------------------------------------------------------------------------
+MAX_VERTEX_ELEMENTS :: 16;
+
+Vertex_Data :: enum _c.int {
+	NONE,
+	FLOAT1,
+	FLOAT2,
+	FLOAT3,
+	FLOAT4,
+	FLOAT4X4,
+	SHORT2_NORM,
+	SHORT4_NORM,
+	COLOR,
+}
+
+Vertex_Element :: struct  {
+	name: cstring,
+	data: Vertex_Data,
+}
+
+Vertex_Structure :: struct  {
+	elements: [MAX_VERTEX_ELEMENTS] Vertex_Element,
+	size: _c.int,
+	instance: _c.bool,
+}
+// -----------------------------------------------------------------------------
+//
+// pipeline.h
+//
+// -----------------------------------------------------------------------------
+Blending_Operation :: enum _c.int {
+	ONE,
+	ZERO,
+	SOURCE_ALPHA,
+	DEST_ALPHA,
+	INV_SOURCE_ALPHA,
+	INV_DEST_ALPHA,
+	SOURCE_COLOR,
+	DEST_COLOR,
+	INV_SOURCE_COLOR,
+	INV_DEST_COLOR,
+}
+Compare_Mode :: enum _c.int {
+	ALWAYS,
+	NEVER,
+	EQUAL,
+	NOT_EQUAL,
+	LESS,
+	LESS_EQUAL,
+	GREATER,
+	GREATER_EQUAL,
+}
+Cull_Mode :: enum _c.int {
+	CLOCKWISE,
+	COUNTER_CLOCKWISE,
+	NOTHING,
+}
+Stencil_Action :: enum _c.int {
+	KEEP,
+	ZERO,
+	REPLACE,
+	INCREMENT,
+	INCREMENT_WRAP,
+	DECREMENT,
+	DECREMENT_WRAP,
+	INVERT,
+}
+
+Pipeline :: struct  {
+	input_layout: [16]^Vertex_Structure,
+	vertex_shader: ^Shader,
+	fragment_shader: ^Shader,
+	geometry_shader: ^Shader,
+	tessellation_control_shader: ^Shader,
+	tessellation_evaluation_shader: ^Shader,
+
+	cull_mode: Cull_Mode,
+
+	depth_write: _c.bool,
+	depth_mode: Compare_Mode,
+
+	stencil_mode: Compare_Mode,
+	stencil_both_pass: Stencil_Action,
+	stencil_depth_fail: Stencil_Action,
+	stencil_fail: Stencil_Action,
+	stencil_reference_value: _c.int,
+	stencil_read_mask: _c.int,
+	stencil_write_mask: _c.int,
+
+	blend_source: Blending_Operation,
+	blend_destination: Blending_Operation,
+
+	alpha_blend_source: Blending_Operation,
+	alpha_blend_destination: Blending_Operation,
+
+	color_write_mask_red: [8]_c.bool,
+	color_write_mask_green: [8]_c.bool,
+	color_write_mask_blue: [8]_c.bool,
+	color_write_mask_alpha: [8]_c.bool,
+
+	color_attachment_count: _c.int,
+	color_attachment: [8]Render_Target_Format,
+
+	depth_attachment_bits: _c.int,
+	stencil_attachment_bits: _c.int,
+
+	conservative_resterization: _c.bool,
+
+	impl: Pipeline_Impl,
+}
+// -----------------------------------------------------------------------------
+//
+// texture.h
+//
+// -----------------------------------------------------------------------------
+Texture :: struct  {
+	tex_width: _c.int,
+	tex_height: _c.int,
+	tex_depth: _c.int,
+	format: Image_Format,
+	impl: Texture_Impl,
+}
+// -----------------------------------------------------------------------------
+//
+// shader.h
+//
+// -----------------------------------------------------------------------------
+Shader_Type :: enum _c.int {
+	FRAGMENT,
+	VERTEX,
+	GEOMETRY,
+	TESSELLATION_CONTROL,
+	TESSELLATION_EVALUATION,
+}
+Shader :: struct {
+	impl: Shader_Impl,
+}
+// -----------------------------------------------------------------------------
+//
+// rendertarget.h
+//
+// -----------------------------------------------------------------------------
+Render_Target_Format :: enum _c.int {
+	FORMAT_32BIT,
+	FORMAT_64BIT_FLOAT,
+	FORMAT_32BIT_RED_FLOAT,
+	FORMAT_128BIT_FLOAT,
+	FORMAT_16BIT_DEPTH,
+	FORMAT_8BIT_RED,
+	FORMAT_16BIT_RED_FLOAT,
+}
+Render_Target :: struct  {
+	width: _c.int,
+	height: _c.int,
+	tex_width: _c.int,
+	tex_height: _c.int,
+	context_id: _c.int,
+	is_cube_map: _c.bool,
+	is_depth_attachment: _c.bool,
+
+	impl: Render_Target_Impl,
+}
+// -----------------------------------------------------------------------------
+//
+// texturearray.h
+//
+// -----------------------------------------------------------------------------
+Texture_Array :: struct  {
+	impl: Texture_Array_Impl,
+}
+// -----------------------------------------------------------------------------
+//
+// IMPLEMENTATION SHENANIGANS
+//
+// -----------------------------------------------------------------------------
+/* when GRAPHICS_API == .DX11 { */
+	//TODO: do it, pussy
+/* } else when GRAPHICS_API == .GL { */
+	Shader_Impl :: struct {
+		_glid: _c.uint,
+		source: cstring,
+		length: _c.size_t,
+		from_source: _c.bool,
+	}
+	Texture_Unit_Impl :: struct {
+		unit: _c.int,
+	}
+	Constant_Location_Impl :: struct  {
+		location: _c.int,
+		type: _c.uint,
+	}
+	Pipeline_Impl :: struct  {
+		program_id: _c.uint,
+		textures: ^^_c.char, // char **textures ?????
+		texture_values: ^_c.int,
+		texture_count: _c.int,
+	}
+	Index_Buffer_Impl :: struct  {
+		short_data: ^u16, //uint16_t
+		data: ^_c.int,
+		my_count: _c.int,
+		buffer_id: _c.uint,
+	}
+	Vertex_Buffer_Impl :: struct  {
+		data: ^_c.float,
+		my_count: _c.int,
+		my_stride: _c.int,
+		buffer_id: _c.uint,
+		usage: _c.uint,
+		section_start: _c.int,
+		section_size: _c.int,
+		structure: Vertex_Structure,
+		instance_data_step_rate: _c.int,
+		initialized: _c.bool
+		// NDEBUB >>. initialized
+	}
+	Texture_Impl :: struct  {
+		texture: _c.uint,
+		// ANDROID >>> bool external_oes,
+		pixfmt: u8,
+	}
+	Render_Target_Impl :: struct  {
+		_framebuffer: _c.uint,
+		_texture: _c.uint,
+		_depth_texture: _c.uint,
+		_has_depth: _c.bool,
+
+		context_id: _c.int,
+		format: _c.int,
+	}
+	Texture_Array_Impl :: struct  {
+		texture: _c.uint,
+	}
+/* } */
