@@ -17,7 +17,7 @@ when ODIN_OS == "windows" {
 	GRAPHICS1 : NONE;
 		>>> GRAPHICS4: DONE;
 	GRAPHICS5: NONE;
-	INPUT : NONE;
+		>>> INPUT : SEMIDONE; { pen.h rotation.h surface.h acceleration.h are missing}
 		>>> IO : DONE;
 		>>> MATH : DONE;
 		>>> NETOWRK : DONE;
@@ -205,9 +205,10 @@ foreign kinc {
 	matrix3x3_set :: proc(matrix: ^Matrix3x3, x: _c.int, y: _c.int, value: _c.float) ---;
 	matrix3x3_transpose :: proc(matrix: ^Matrix3x3) ---;
 	matrix3x3_identity :: proc() -> Matrix3x3 ---;
-	matrix3x3_rotation_x :: proc(alpha: _c.float) -> Matrix3x3 ---;
-	matrix3x3_rotation_y :: proc(alpha: _c.float) -> Matrix3x3 ---;
-	matrix3x3_rotation_z :: proc(alpha: _c.float) -> Matrix3x3 ---;
+
+	matrix3x_rotation_x :: proc(alpha: _c.float) -> Matrix3x3 ---;
+	matrix3x_rotation_y :: proc(alpha: _c.float) -> Matrix3x3 ---;
+	matrix3x_rotation_z :: proc(alpha: _c.float) -> Matrix3x3 ---;
 
 	matrix4x4_get :: proc(matrix: ^Matrix4x4, x: _c.int, y: _c.int) -> _c.float ---;
 	matrix4x4_set :: proc(matrix: ^Matrix4x4, x: _c.int, y: _c.int, value: _c.float) ---;
@@ -312,6 +313,47 @@ foreign kinc {
 	keyboard_key_down_callback: Key_Down_Callback;
 	keyboard_key_up_callback: Key_Up_Callback;
 	keyboard_key_press_callback: Key_Press_Callback;
+
+	internal_keyboard_trigger_key_down :: proc(key_code: _c.int) ---;
+	internal_keyboard_trigger_key_up :: proc(key_code: _c.int) ---;
+	internal_keyboard_trigger_key_press :: proc(key_code: _c.int) ---;
+
+	// -----------------------------------------------------------------------------
+	//
+	// mouse.h
+	//
+	// -----------------------------------------------------------------------------
+	mouse_can_lock :: proc(window: _c.int) -> _c.bool ---;
+	mouse_is_locked :: proc(window: _c.int) -> _c.bool ---;
+	mouse_lock :: proc(window: _c.int) ---;
+	mouse_unlock :: proc(window: _c.int) ---;
+
+	mouse_set_cursor :: proc(cursor: _c.int) ---;
+
+	mouse_show :: proc() ---;
+	mouse_hide :: proc() ---;
+	mouse_set_position :: proc(window: _c.int, x: _c.int, y: _c.int) ---;
+	mouse_get_positiion :: proc(window: _c.int, x: ^_c.int, y: ^_c.int) ---;
+
+	mouse_press_callback: #type proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int);
+	mouse_release_callback: #type proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int);
+	mouse_move_callback: #type proc "c" (window: _c.int, x: _c.int, y: _c.int, movement_x: _c.int, movement_y: _c.int);
+	mouse_scroll_callback: #type proc "c" (window: _c.int, delta: _c.int);
+	mouse_enter_window_callback: #type proc "c" (window: _c.int);
+	mouse_leave_window_callback: #type proc "c" (window: _c.int);
+
+	// -----------------------------------------------------------------------------
+	//
+	// gamepad.h
+	//
+	// -----------------------------------------------------------------------------
+	gamepad_vendor :: proc(gamepad: _c.int) -> cstring ---;
+	gamepad_product_name :: proc(gamepad: _c.int) -> cstring ---;
+	gamepad_connected :: proc(gamepad: _c.int) -> _c.bool ---;
+
+	gamepad_axis_callback: #type proc "c" (gamepad: _c.int, axis: _c.int, value: _c.float);
+	gamepad_button_callback: #type proc "c" (gamepad: _c.int, button: _c.int, value: _c.float);
+	
 
 	// -----------------------------------------------------------------------------
 	//
@@ -480,4 +522,47 @@ foreign kinc {
 	// -----------------------------------------------------------------------------
 	g4_texture_array_init :: proc(array: ^Texture_Array, textures: ^Image, count: _c.int) ---;
 	g4_texture_array_destroy :: proc(array: ^Texture_Array) ---;
+
+	// -----------------------------------------------------------------------------
+	//
+	// sound.h
+	//
+	// -----------------------------------------------------------------------------
+	audio1_sound_create :: proc(filename: cstring) -> ^Audio1_Sound ---;
+	audio1_sound_destroy :: proc(sound: ^Audio1_Sound) ---;
+	audio1_sound_volume :: proc(sound: ^Audio1_Sound) -> _c.float ---;
+	audio1_sound_set_volume :: proc(sound: ^Audio1_Sound, value: _c.float) ---;
+	// -----------------------------------------------------------------------------
+	//
+	// audio1/audio.h
+	//
+	// -----------------------------------------------------------------------------
+	audio1_init :: proc() ---;
+	audio1_play_sound :: proc(sound: ^Audio1_Sound, loop: _c.bool, pitch: _c.float, unique: _c.bool) -> Audio1_Channel ---;
+
+	audio1_stop_sound :: proc(sound: ^Audio1_Sound) ---;
+	audio1_play_sound_stream :: proc(stream: ^Audio1_Sound_Stream) ---;
+	audio1_stop_sound_stream :: proc(stream: ^Audio1_Sound_Stream) ---;
+	/* audio1_play_video_sound_stream :: proc(stream: ^Audio1_Video_Sound_Stream) ---; */
+	/* audio1_stop_video_sound_stream :: proc(stream: ^Audio1_Video_Sound_Stream) ---; */
+	// -----------------------------------------------------------------------------
+	//
+	// soundstream.h
+	//
+	// -----------------------------------------------------------------------------
+	audio1_sound_stream_cretae :: proc(filename: cstring, looping: _c.bool) -> ^Audio1_Sound_Stream ---;
+	audio1_sound_stream_next_sample :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	audio1_sound_stream_channels :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	audio1_sound_stream_sample_rate :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	audio1_sound_stream_looping :: proc(stream: ^Audio1_Sound_Stream) -> _c.bool ---;
+	audio1_sound_stream_set_looping :: proc(stream: ^Audio1_Sound_Stream, loop: _c.bool) ---;
+	audio1_sound_stream_ended :: proc(stream: ^Audio1_Sound_Stream) -> _c.bool ---;
+	audio1_sound_stream_length :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	audio1_sound_stream_position :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	audio1_sound_stream_reset :: proc(stream: ^Audio1_Sound_Stream) ---;
+	audio1_sound_stream_volume :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	audio1_sound_stream_set_volume :: proc(stream: ^Audio1_Sound_Stream, value: _c.float) ---;
+
+
+
 }

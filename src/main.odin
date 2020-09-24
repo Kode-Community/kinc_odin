@@ -8,6 +8,7 @@ import "core:strconv"
 import "core:strings"
 import "core:mem"
 import "core:os"
+import _c "core:c"
 
 import "kinc"
 
@@ -116,12 +117,43 @@ render :: proc() {
 	kinc.g4_clear(kinc.CLEAR_COLOR, kinc.WHITE, 0.0, 0);
 
 	kinc.g4_set_pipeline(&pipeline);
+
+	kinc.g4_set_matrix4(matrix, &projection);
+
 	kinc.g4_set_vertex_buffer(&vertices);
 	kinc.g4_set_index_buffer(&indices);
-	kinc.g4_draw_indexed_vertices();
+	kinc.g4_set_texture(texture_unit, &textures["tileset"]);
+
+		push_triangle(
+			0, 0, 1280, 0, 0, 800,
+			0, 0, 1, 0, 0, 1
+		);
+		push_triangle(
+			0, 800, 1280, 0, 1280, 800,
+			0, 1, 1, 0, 1, 1
+		
+		);
+
+	flush();
+	/* kinc.g4_draw_indexed_vertices(); */
 
 	kinc.g4_end(0);
 	kinc.g4_swap_buffers();
+}
+
+mouse_pressed :: proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int) {
+	context = runtime.default_context();
+
+	/* fmt.println(button, ": ", x, " ", y); */
+}
+
+gamepad_axis :: proc "c" (gamepad: _c.int, axis: _c.int, value: _c.float) {
+	context = runtime.default_context();
+	//fmt.println(gamepad, "[", axis, "]: ", value);
+}
+gamepad_button :: proc "c" (gamepad: _c.int, button: _c.int, value: _c.float) {
+	context = runtime.default_context();
+	fmt.println(gamepad, "[", button, "]: ", value);
 }
 
 
@@ -131,6 +163,66 @@ FS_SRC := #load("simple.frag.glsl");
 pipeline: kinc.Pipeline = ---;
 vertices: kinc.Vertex_Buffer = ---;
 indices: kinc.Index_Buffer = ---;
+
+textures: map[string]kinc.Texture;
+
+texture_unit: kinc.Texture_Unit;
+matrix: kinc.Constant_Location;
+
+current_triangle := 0;
+current_ptr: ^f32;
+DPT :: 15;
+
+flush :: proc() {
+	kinc.g4_vertex_buffer_unlock(&vertices, i32(current_triangle)*3);
+
+	kinc.g4_draw_indexed_vertices_from_to(0, i32(current_triangle)*3);
+
+	current_triangle = 0;
+
+	current_ptr = kinc.g4_vertex_buffer_lock_all(&vertices);
+}
+
+push_triangle :: proc(x1, y1, x2, y2, x3, y3, u1, v1, u2, v2, u3, v3: f32) {
+	t := DPT * current_triangle;
+	v := current_ptr;
+
+	mem.ptr_offset(v, t + 0)^ = x1;
+	mem.ptr_offset(v, t + 1)^ = y1;
+			mem.ptr_offset(v, t + 2)^ = -5;
+		mem.ptr_offset(v, t + 3)^ = u1;
+		mem.ptr_offset(v, t + 4)^ = v1;
+	mem.ptr_offset(v, t + 5)^ = x2;
+	mem.ptr_offset(v, t + 6)^ = y2;
+			mem.ptr_offset(v, t + 7)^ = -5;
+		mem.ptr_offset(v, t + 8)^ = u2;
+		mem.ptr_offset(v, t + 9)^ = v2;
+	mem.ptr_offset(v, t + 10)^ = x3;
+	mem.ptr_offset(v, t + 11)^ = y3;
+			mem.ptr_offset(v, t + 12)^ = -5;
+		mem.ptr_offset(v, t + 13)^ = u3;
+		mem.ptr_offset(v, t + 14)^ = v3;
+
+	current_triangle += 1;
+}
+
+ortho :: proc(left, right, bottom, top, near, far: _c.float) -> kinc.Matrix4x4 {
+	tx := -(right + left) / (right - left);
+	ty := -(top + bottom) / (top - bottom);
+	tz := -(far + near) / (far - near);
+
+	return {
+		[16]_c.float{
+			2 / (right - left), 0, 0, tx,
+			0, 2.0 / (top - bottom), 0, ty,
+			0, 0, -2 / (far - near), tz,
+			0, 0, 0, 1
+		}
+	};
+	
+}
+projection := ortho(0, 1280, 800, 0, 0.1, 1000);
+
 init :: proc() {
 
 	// image.h
@@ -139,9 +231,27 @@ init :: proc() {
 
 	image: kinc.Image;
 	if kinc.image_init_from_file(&image, data, "assets/tileset.png") != 0 {
-		//fmt.println(image);
-		//loaded image
+		textures["tileset"] = {};
+		kinc.g4_texture_init_from_image(&textures["tileset"], &image);
+		fmt.println("Tileset texture loaded.");
+		//TODO: unload tileset image
 	}
+
+	kinc.mouse_press_callback = mouse_pressed;
+
+	//works fine
+	kinc.gamepad_axis_callback = gamepad_axis;
+	kinc.gamepad_button_callback = gamepad_button;
+
+	//gamepad_connected not working on linux?????
+	//TODO: tell robert about it
+	for i in 0..<5 {
+		fmt.println(kinc.gamepad_connected(i32(i)));
+	}
+
+	fmt.println(kinc.gamepad_vendor(0), ": ", kinc.gamepad_product_name(0), " connected.");
+
+
 
 
 	vertex_shader: kinc.Shader;
@@ -152,6 +262,7 @@ init :: proc() {
 	structure: kinc.Vertex_Structure = ---;
 	kinc.g4_vertex_structure_init(&structure);
 	kinc.g4_vertex_structure_add(&structure, "pos", .FLOAT3);
+	kinc.g4_vertex_structure_add(&structure, "uv", .FLOAT2);
 
 	kinc.g4_pipeline_init(&pipeline);
 	pipeline.vertex_shader = &vertex_shader;
@@ -160,37 +271,31 @@ init :: proc() {
 	pipeline.input_layout[1] = nil;
 	kinc.g4_pipeline_compile(&pipeline);
 
-	kinc.g4_vertex_buffer_init(&vertices, 3, &structure, .STATIC, 0);
-	v := kinc.g4_vertex_buffer_lock_all(&vertices);
-	{
-		mem.ptr_offset(v, 0)^ = -1;
-		mem.ptr_offset(v, 1)^ = -1;
-		mem.ptr_offset(v, 2)^ = 0.5;
-		mem.ptr_offset(v, 3)^ = 1;
-		mem.ptr_offset(v, 4)^ = -1;
-		mem.ptr_offset(v, 5)^ = 0.5;
-		mem.ptr_offset(v, 6)^ = -1;
-		mem.ptr_offset(v, 7)^ = 1;
-		mem.ptr_offset(v, 8)^ = 0.5;
-		kinc.g4_vertex_buffer_unlock_all(&vertices);
-	}
+	
+	texture_unit = kinc.g4_pipeline_get_texture_unit(&pipeline, "texture");
+	matrix = kinc.g4_pipeline_get_constant_location(&pipeline, "projection");
 
-	kinc.g4_index_buffer_init(&indices, 3, .FORMAT_32BIT);
+
+	kinc.g4_vertex_buffer_init(&vertices, 1000 * 3, &structure, .DYNAMIC, 0);
+	current_ptr = kinc.g4_vertex_buffer_lock_all(&vertices);
+	vertices.impl.initialized = true;
+
+	kinc.g4_index_buffer_init(&indices, 1000 * 3, .FORMAT_32BIT);
 	i := kinc.g4_index_buffer_lock(&indices);
 	{
-		mem.ptr_offset(i, 0)^ = 0;
-		mem.ptr_offset(i, 1)^ = 1;
-		mem.ptr_offset(i, 2)^ = 2;
+		for j in 0..<1000 {
+			mem.ptr_offset(i, j*3 + 0)^ = i32(j*3) + 0;
+			mem.ptr_offset(i, j*3 + 1)^ = i32(j*3) + 1;
+			mem.ptr_offset(i, j*3 + 2)^ = i32(j*3) + 2;
+		}
 		kinc.g4_index_buffer_unlock(&indices);
 	}
 
 	kinc.keyboard_key_down_callback = key_up;
-
 }
 
 key_up :: proc "c" (p: i32) {
 	context = runtime.default_context();
-
 	
 }
 

@@ -744,6 +744,97 @@ Render_Target :: struct  {
 Texture_Array :: struct  {
 	impl: Texture_Array_Impl,
 }
+
+// -----------------------------------------------------------------------------
+//
+// sound.h
+//
+// -----------------------------------------------------------------------------
+Audio1_Sound :: struct {
+	format: Audio2_Buffer_Format,
+	left: ^i16,
+	right: ^i16,
+	size: _c.int,
+	sample_rate_pos: _c.float,
+	my_volume: _c.float,
+}
+// -----------------------------------------------------------------------------
+//
+// audio1/audio.h
+//
+// -----------------------------------------------------------------------------
+Audio1_Channel :: struct {
+	sound: ^Audio1_Sound,
+	position: _c.float,
+	loop: _c.bool,
+	volume: _c.float,
+	pitch: _c.float,
+}
+
+Audio1_Stream_Channel :: struct {
+	stream: ^Audio1_Sound_Stream,
+	position: _c.int,
+}
+
+/* Audio1_Video_Channel :: struct { */
+/* 	stream: ^Audio1_Video_Sound_Stream, */
+/* 	position: _c.int, */
+/* } */
+// -----------------------------------------------------------------------------
+//
+// soundstream.h
+//
+// -----------------------------------------------------------------------------
+Audio1_Sound_Stream :: struct {
+	vorbis: rawptr, // eeeeeh
+	chans: _c.int,
+	rate: _c.int,
+	my_looping: _c.bool,
+	my_volume: _c.float,
+	decoded: _c.bool,
+	rate_decoded_hack: _c.bool,
+	end: _c.bool,
+	samples: [2]_c.float,
+	buffer: ^u8,
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // -----------------------------------------------------------------------------
 //
 // IMPLEMENTATION SHENANIGANS
