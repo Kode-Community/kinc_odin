@@ -1,20 +1,20 @@
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\G1.FRAG.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\g1.frag.glsl" ..\Deployment\g1.frag .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\g1.frag.glsl" ..\Deployment\g1.frag .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\G1.VERT.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\g1.vert.glsl" ..\Deployment\g1.vert .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\g1.vert.glsl" ..\Deployment\g1.vert .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\PAINTER-COLORED.FRAG.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\painter-colored.frag.glsl" ..\Deployment\painter-colored.frag .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\painter-colored.frag.glsl" ..\Deployment\painter-colored.frag .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\PAINTER-COLORED.VERT.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\painter-colored.vert.glsl" ..\Deployment\painter-colored.vert .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\painter-colored.vert.glsl" ..\Deployment\painter-colored.vert .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\PAINTER-IMAGE.FRAG.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\painter-image.frag.glsl" ..\Deployment\painter-image.frag .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\painter-image.frag.glsl" ..\Deployment\painter-image.frag .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\PAINTER-IMAGE.VERT.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\painter-image.vert.glsl" ..\Deployment\painter-image.vert .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\painter-image.vert.glsl" ..\Deployment\painter-image.vert .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\PAINTER-TEXT.FRAG.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\painter-text.frag.glsl" ..\Deployment\painter-text.frag .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\painter-text.frag.glsl" ..\Deployment\painter-text.frag .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\PAINTER-TEXT.VERT.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\painter-text.vert.glsl" ..\Deployment\painter-text.vert .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\painter-text.vert.glsl" ..\Deployment\painter-text.vert .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\PAINTER-VIDEO.FRAG.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\painter-video.frag.glsl" ..\Deployment\painter-video.frag .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\painter-video.frag.glsl" ..\Deployment\painter-video.frag .\ windows --quiet
 ^C:\PROJECTS\KINC\SOURCES\SHADERS\PAINTER-VIDEO.VERT.GLSL
-"..\Tools\krafix\krafix.exe" d3d11 "C:\projects\Kinc\Sources\Shaders\painter-video.vert.glsl" ..\Deployment\painter-video.vert .\ windows --quiet
+"..\Tools\krafix\krafix.exe" glsl "C:\projects\Kinc\Sources\Shaders\painter-video.vert.glsl" ..\Deployment\painter-video.vert .\ windows --quiet

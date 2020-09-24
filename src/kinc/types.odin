@@ -87,8 +87,8 @@ Image_Read_Callbacks :: struct  {
 	seek: proc "c" (user_data: rawptr, pos: _c.int),
 	pos: proc "c" (user_data: rawptr) -> _c.int,
 	size: proc "c" (user_data: rawptr) -> _c.size_t,
-
 }
+
 // -----------------------------------------------------------------------------
 //
 // display.h
@@ -840,9 +840,108 @@ Audio1_Sound_Stream :: struct {
 // IMPLEMENTATION SHENANIGANS
 //
 // -----------------------------------------------------------------------------
-/* when GRAPHICS_API == .DX11 { */
-	//TODO: do it, pussy
-/* } else when GRAPHICS_API == .GL { */
+when GRAPHICS_API == .DX11 {
+	IShader_Constant :: struct {
+		hash: u32,
+		offset: u32,
+		size: u32,
+		columns: u8,
+		rows: u8,
+	}
+	IHash_Index :: struct {
+		hash: u32,
+		index: u32,
+	}
+	Shader_Impl :: struct {
+		constants: [64] IShader_Constant,
+		constants_size: _c.int,
+		attributes: [64] IHash_Index,
+		textures: [64] IHash_Index,
+		shader: rawptr,
+		data: ^u8,
+		length: _c.int,
+		type: _c.int,
+	}
+	Texture_Unit_Impl :: struct {
+		unit: _c.int,
+		vertex: _c.bool,
+	}
+	Constant_Location_Impl :: struct  {
+		vertex_offset: u32,
+		vertex_size: u32,
+		fragment_offset: u32,
+		fragment_size: u32,
+		geometry_offset: u32,
+		geometry_size: u32,
+		tess_eval_offset: u32,
+		tess_eval_size: u32,
+		tess_control_offset: u32,
+		tess_control_size: u32,
+
+		vertex_columns: u8,
+		vertex_rows: u8,
+		fragment_columns: u8,
+		fragment_rows: u8,
+		geometry_columns: u8,
+		geometry_rows: u8,
+		tess_eval_columns: u8,
+		tess_eval_rows: u8,
+		tess_control_columns: u8,
+		tess_control_rows: u8,
+	}
+	//i don't want to import all the id3d11 stuff, but everything here is a pointer so yeah, we don't need the impl actually
+	Pipeline_Impl :: struct {
+		input_layout: rawptr,
+		fragment_constant_buffer: rawptr,
+		vertex_constant_buffer: rawptr,
+		geometry_constant_buffer: rawptr,
+		tess_eval_constant_buffer: rawptr,
+		tess_control_constant_buffer: rawptr,
+		depth_stencil_state: rawptr,
+		rasterizer_state: rawptr,
+		resterizer_state_scissor: rawptr,
+		blend_state: rawptr,
+	}
+	Index_Buffer_Impl :: struct {
+		ib: rawptr, //ID3D11BUFER
+		indices: ^_c.int,
+		count: _c.int,
+	}
+	Vertex_Buffer_Impl :: struct {
+		vb: rawptr,
+		stride: _c.int,
+		count: _c.int,
+		lock_start: _c.int,
+		lock_count: _c.int,
+		vertices: ^_c.float,
+		usage: _c.int,
+	}
+	Texture_Impl :: struct {
+		has_mipmaps: _c.bool,
+		stage: _c.int,
+		texture: rawptr,
+		texture3d: rawptr,
+		view: rawptr,
+		compute_view: rawptr,
+		render_view: rawptr,
+	}
+	Render_Target_Impl :: struct {
+		texture_render: rawptr,
+		texture_sample: rawptr,
+		texture_staging: rawptr,
+		render_target_view_render: [6]rawptr, // [6]
+		render_target_view_sample: [6]rawptr,
+		depth_stencil: rawptr,
+		depth_stencil_view: [6]rawptr,
+		render_target_srv: rawptr,
+		depth_stencil_srv: rawptr,
+		format: _c.int,
+	}
+	Texture_Array_Impl :: struct  {
+		texture: rawptr,
+		view: rawptr,
+	}
+} else when GRAPHICS_API == .GL {
 	Shader_Impl :: struct {
 		_glid: _c.uint,
 		source: cstring,
@@ -898,4 +997,4 @@ Audio1_Sound_Stream :: struct {
 	Texture_Array_Impl :: struct  {
 		texture: _c.uint,
 	}
-/* } */
+}

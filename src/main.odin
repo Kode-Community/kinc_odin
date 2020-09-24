@@ -144,16 +144,13 @@ render :: proc() {
 mouse_pressed :: proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int) {
 	context = runtime.default_context();
 
-	/* fmt.println(button, ": ", x, " ", y); */
 }
 
 gamepad_axis :: proc "c" (gamepad: _c.int, axis: _c.int, value: _c.float) {
 	context = runtime.default_context();
-	//fmt.println(gamepad, "[", axis, "]: ", value);
 }
 gamepad_button :: proc "c" (gamepad: _c.int, button: _c.int, value: _c.float) {
 	context = runtime.default_context();
-	fmt.println(gamepad, "[", button, "]: ", value);
 }
 
 
@@ -233,33 +230,24 @@ init :: proc() {
 	if kinc.image_init_from_file(&image, data, "assets/tileset.png") != 0 {
 		textures["tileset"] = {};
 		kinc.g4_texture_init_from_image(&textures["tileset"], &image);
-		fmt.println("Tileset texture loaded.");
-		//TODO: unload tileset image
 	}
 
-	kinc.mouse_press_callback = mouse_pressed;
+	/* kinc.mouse_press_callback = mouse_pressed; */
+	/* kinc.gamepad_axis_callback = gamepad_axis; */
+	/* kinc.gamepad_button_callback = gamepad_button; */
+	/* kinc.keyboard_key_down_callback = key_up; */
 
-	//works fine
-	kinc.gamepad_axis_callback = gamepad_axis;
-	kinc.gamepad_button_callback = gamepad_button;
-
-	//gamepad_connected not working on linux?????
-	//TODO: tell robert about it
-	for i in 0..<5 {
-		fmt.println(kinc.gamepad_connected(i32(i)));
+	vertex_shader: kinc.Shader = ---;
+	{
+		kinc.g4_shader_init(&vertex_shader, &VS_SRC[0], auto_cast len(VS_SRC), .VERTEX);
 	}
 
-	fmt.println(kinc.gamepad_vendor(0), ": ", kinc.gamepad_product_name(0), " connected.");
+	fragment_shader: kinc.Shader = ---;
+	{
+		kinc.g4_shader_init(&fragment_shader, &FS_SRC[0], auto_cast len(FS_SRC), .FRAGMENT);
+	}
 
-
-
-
-	vertex_shader: kinc.Shader;
-	kinc.g4_shader_init(&vertex_shader, &VS_SRC[0], auto_cast len(VS_SRC), .VERTEX);
-	fragment_shader: kinc.Shader;
-	kinc.g4_shader_init(&fragment_shader, &FS_SRC[0], auto_cast len(FS_SRC), .FRAGMENT);
-
-	structure: kinc.Vertex_Structure = ---;
+	structure: kinc.Vertex_Structure;
 	kinc.g4_vertex_structure_init(&structure);
 	kinc.g4_vertex_structure_add(&structure, "pos", .FLOAT3);
 	kinc.g4_vertex_structure_add(&structure, "uv", .FLOAT2);
@@ -270,15 +258,13 @@ init :: proc() {
 	pipeline.input_layout[0] = &structure;
 	pipeline.input_layout[1] = nil;
 	kinc.g4_pipeline_compile(&pipeline);
-
 	
 	texture_unit = kinc.g4_pipeline_get_texture_unit(&pipeline, "texture");
 	matrix = kinc.g4_pipeline_get_constant_location(&pipeline, "projection");
 
-
 	kinc.g4_vertex_buffer_init(&vertices, 1000 * 3, &structure, .DYNAMIC, 0);
 	current_ptr = kinc.g4_vertex_buffer_lock_all(&vertices);
-	vertices.impl.initialized = true;
+	/* vertices.impl.initialized = true; */
 
 	kinc.g4_index_buffer_init(&indices, 1000 * 3, .FORMAT_32BIT);
 	i := kinc.g4_index_buffer_lock(&indices);
@@ -290,8 +276,6 @@ init :: proc() {
 		}
 		kinc.g4_index_buffer_unlock(&indices);
 	}
-
-	kinc.keyboard_key_down_callback = key_up;
 }
 
 key_up :: proc "c" (p: i32) {
