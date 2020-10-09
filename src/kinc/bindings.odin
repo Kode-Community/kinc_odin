@@ -26,6 +26,7 @@ when ODIN_OS == "windows" {
 		>>> BASE : DONE;
 */
 
+
 @(default_calling_convention = "c")
 @(link_prefix = "kinc_")
 foreign kinc {
@@ -310,7 +311,9 @@ foreign kinc {
 	keyboard_hide :: proc() ---;
 	keyboard_active :: proc() -> _c.bool ---;
 
-	keyboard_key_down_callback: Key_Down_Callback;
+	@(link_name="__imp_kinc_keyboard_key_down_callback")
+	keyboard_key_down_callback: ^Key_Down_Callback;
+
 	keyboard_key_up_callback: Key_Up_Callback;
 	keyboard_key_press_callback: Key_Press_Callback;
 
@@ -330,16 +333,29 @@ foreign kinc {
 
 	mouse_set_cursor :: proc(cursor: _c.int) ---;
 
+
 	mouse_show :: proc() ---;
 	mouse_hide :: proc() ---;
 	mouse_set_position :: proc(window: _c.int, x: _c.int, y: _c.int) ---;
 	mouse_get_positiion :: proc(window: _c.int, x: ^_c.int, y: ^_c.int) ---;
 
+
+	@(link_name="__imp_kinc_mouse_press_callback")
 	mouse_press_callback: #type proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int);
+
+	@(link_name="__imp_kinc_mouse_release_callback")
 	mouse_release_callback: #type proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int);
+
+	@(link_name="__imp_kinc_mouse_move_callback")
 	mouse_move_callback: #type proc "c" (window: _c.int, x: _c.int, y: _c.int, movement_x: _c.int, movement_y: _c.int);
+
+	@(link_name="__imp_kinc_mouse_scroll_callback")
 	mouse_scroll_callback: #type proc "c" (window: _c.int, delta: _c.int);
+
+	@(link_name="__imp_kinc_mouse_enter_window_callback")
 	mouse_enter_window_callback: #type proc "c" (window: _c.int);
+
+	@(link_name="__imp_kinc_mouse_leave_window_callback")
 	mouse_leave_window_callback: #type proc "c" (window: _c.int);
 
 	// -----------------------------------------------------------------------------
@@ -351,7 +367,9 @@ foreign kinc {
 	gamepad_product_name :: proc(gamepad: _c.int) -> cstring ---;
 	gamepad_connected :: proc(gamepad: _c.int) -> _c.bool ---;
 
+	@(link_name="__imp_kinc_gamepad_axis_callback")
 	gamepad_axis_callback: #type proc "c" (gamepad: _c.int, axis: _c.int, value: _c.float);
+	@(link_name="__imp_kinc_gamepad_button_callback")
 	gamepad_button_callback: #type proc "c" (gamepad: _c.int, button: _c.int, value: _c.float);
 	
 
@@ -550,7 +568,7 @@ foreign kinc {
 	// soundstream.h
 	//
 	// -----------------------------------------------------------------------------
-	audio1_sound_stream_cretae :: proc(filename: cstring, looping: _c.bool) -> ^Audio1_Sound_Stream ---;
+	audio1_sound_stream_create :: proc(filename: cstring, looping: _c.bool) -> ^Audio1_Sound_Stream ---;
 	audio1_sound_stream_next_sample :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
 	audio1_sound_stream_channels :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
 	audio1_sound_stream_sample_rate :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
