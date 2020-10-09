@@ -5,7 +5,6 @@ import _c "core:c"
 when ODIN_OS == "windows" {
 	foreign import kinc "../../kinc_windows/Kinc.lib"
 } else {
-	//for some reason linux paths are handles from compile directory, I guess
 	foreign import kinc "kinc_linux/Kinc.so"
 };
 
