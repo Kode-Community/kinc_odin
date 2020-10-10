@@ -12,9 +12,6 @@ import _c "core:c"
 
 import "kinc"
 
-KORE_WINDOWS :: 1;
-KINC_DYNAMIC :: 1;
-
 
 Fps_Direct :: struct {
 	counter: u32,
