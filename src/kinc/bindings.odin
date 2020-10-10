@@ -313,8 +313,11 @@ foreign kinc {
 	@(link_name="__imp_kinc_keyboard_key_down_callback")
 	keyboard_key_down_callback: ^Key_Down_Callback;
 
-	keyboard_key_up_callback: Key_Up_Callback;
-	keyboard_key_press_callback: Key_Press_Callback;
+	@(link_name="__imp_kinc_keyboard_key_up_callback")
+	keyboard_key_up_callback: ^Key_Up_Callback;
+
+	@(link_name="__imp_kinc_keyboard_key_press_callback")
+	keyboard_key_press_callback: ^Key_Press_Callback;
 
 	internal_keyboard_trigger_key_down :: proc(key_code: _c.int) ---;
 	internal_keyboard_trigger_key_up :: proc(key_code: _c.int) ---;
@@ -340,22 +343,22 @@ foreign kinc {
 
 
 	@(link_name="__imp_kinc_mouse_press_callback")
-	mouse_press_callback: #type proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int);
+	mouse_press_callback: ^proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int);
 
 	@(link_name="__imp_kinc_mouse_release_callback")
-	mouse_release_callback: #type proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int);
+	mouse_release_callback: ^proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int);
 
 	@(link_name="__imp_kinc_mouse_move_callback")
-	mouse_move_callback: #type proc "c" (window: _c.int, x: _c.int, y: _c.int, movement_x: _c.int, movement_y: _c.int);
+	mouse_move_callback: ^proc "c" (window: _c.int, x: _c.int, y: _c.int, movement_x: _c.int, movement_y: _c.int);
 
 	@(link_name="__imp_kinc_mouse_scroll_callback")
-	mouse_scroll_callback: #type proc "c" (window: _c.int, delta: _c.int);
+	mouse_scroll_callback: ^proc "c" (window: _c.int, delta: _c.int);
 
 	@(link_name="__imp_kinc_mouse_enter_window_callback")
-	mouse_enter_window_callback: #type proc "c" (window: _c.int);
+	mouse_enter_window_callback: ^proc "c" (window: _c.int);
 
 	@(link_name="__imp_kinc_mouse_leave_window_callback")
-	mouse_leave_window_callback: #type proc "c" (window: _c.int);
+	mouse_leave_window_callback: ^proc "c" (window: _c.int);
 
 	// -----------------------------------------------------------------------------
 	//
@@ -367,9 +370,9 @@ foreign kinc {
 	gamepad_connected :: proc(gamepad: _c.int) -> _c.bool ---;
 
 	@(link_name="__imp_kinc_gamepad_axis_callback")
-	gamepad_axis_callback: #type proc "c" (gamepad: _c.int, axis: _c.int, value: _c.float);
+	gamepad_axis_callback: ^proc "c" (gamepad: _c.int, axis: _c.int, value: _c.float);
 	@(link_name="__imp_kinc_gamepad_button_callback")
-	gamepad_button_callback: #type proc "c" (gamepad: _c.int, button: _c.int, value: _c.float);
+	gamepad_button_callback: ^proc "c" (gamepad: _c.int, button: _c.int, value: _c.float);
 	
 
 	// -----------------------------------------------------------------------------

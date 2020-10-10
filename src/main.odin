@@ -12,6 +12,9 @@ import _c "core:c"
 
 import "kinc"
 
+KORE_WINDOWS :: 1;
+KINC_DYNAMIC :: 1;
+
 
 Fps_Direct :: struct {
 	counter: u32,
@@ -144,6 +147,7 @@ render :: proc() {
 mouse_pressed :: proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int) {
 	context = runtime.default_context();
 
+	fmt.println(x, y);
 }
 
 gamepad_axis :: proc "c" (gamepad: _c.int, axis: _c.int, value: _c.float) {
@@ -220,6 +224,16 @@ ortho :: proc(left, right, bottom, top, near, far: _c.float) -> kinc.Matrix4x4 {
 }
 projection := ortho(0, 1280, 800, 0, 0.1, 1000);
 
+key_press :: proc "cdecl" (key: _c.int) {
+	context = runtime.default_context();
+	fmt.println(key);
+}
+
+key_down :: proc "c" (key: _c.int) {
+	context = runtime.default_context();
+	fmt.println("Key Down: ", key);
+}
+
 init :: proc() {
 
 	// image.h
@@ -232,10 +246,12 @@ init :: proc() {
 		kinc.g4_texture_init_from_image(&textures["tileset"], &image);
 	}
 
-	/* kinc.mouse_press_callback = mouse_pressed; */
-	/* kinc.gamepad_axis_callback = gamepad_axis; */
+	kinc.mouse_press_callback^ = mouse_pressed;
+	/* fmt.println(kinc.keyboard_key_down_callback);//= key_press; */
+	//kinc.gamepad_axis_callback = gamepad_axis;
+	//kinc.window_set_resize_callback = window_resize;
 	/* kinc.gamepad_button_callback = gamepad_button; */
-	/* kinc.keyboard_key_down_callback = key_up; */
+	kinc.keyboard_key_down_callback^ = key_down;
 
 	vertex_shader: kinc.Shader = ---;
 	{
@@ -280,7 +296,7 @@ init :: proc() {
 
 key_up :: proc "c" (p: i32) {
 	context = runtime.default_context();
-	
+	fmt.println(p);
 }
 
 update :: proc(dt: f64) {

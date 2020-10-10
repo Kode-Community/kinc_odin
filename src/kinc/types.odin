@@ -3,7 +3,6 @@ package kinc;
 import _c "core:c"
 
 Graphics_Api :: enum {
-	DX9,
 	DX11,
 	GL,
 }
