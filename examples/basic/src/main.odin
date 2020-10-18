@@ -8,10 +8,10 @@ import "core:strconv"
 import "core:strings"
 import "core:mem"
 import "core:os"
+import "core:math/linalg"
 import _c "core:c"
 
-import "kinc"
-
+import "../../../kinc"
 
 Fps_Direct :: struct {
 	counter: u32,
@@ -102,43 +102,31 @@ internal_update :: proc "c" () {
 
 
 
-
-
-
-
-
-
-
-
-
-
 render :: proc() {
-	kinc.g4_begin(0);
-	kinc.g4_clear(kinc.CLEAR_COLOR, kinc.WHITE, 0.0, 0);
+	if render_context == nil do return;
 
-	kinc.g4_set_pipeline(&pipeline);
+	if render_context.pipeline == nil do return;
 
-	kinc.g4_set_matrix4(matrix, &projection);
+		kinc.g4_begin(0);
+		kinc.g4_clear(kinc.CLEAR_COLOR, kinc.RED, 0.0, 0);
 
-	kinc.g4_set_vertex_buffer(&vertices);
-	kinc.g4_set_index_buffer(&indices);
-	kinc.g4_set_texture(texture_unit, &textures["tileset"]);
+		kinc.g4_set_pipeline(render_context.pipeline);
 
-		push_triangle(
-			0, 0, 1280, 0, 0, 800,
-			0, 0, 1, 0, 0, 1
-		);
-		push_triangle(
-			0, 800, 1280, 0, 1280, 800,
-			0, 1, 1, 0, 1, 1
-		
-		);
 
-	flush();
-	/* kinc.g4_draw_indexed_vertices(); */
+			push_triangle(
+				0, 800, 0, 0, 1280, 0, //pos
+				0, 1, 0, 0, 1, 0 //uv
+			);
+			push_triangle(
+				0, 800, 1280, 0, 1280, 800, //pos
+				0, 1, 1, 0, 1, 1 //uv
+			);
 
-	kinc.g4_end(0);
-	kinc.g4_swap_buffers();
+		flush();
+		/* kinc.g4_draw_indexed_vertices(); */
+
+		kinc.g4_end(0);
+		kinc.g4_swap_buffers();
 }
 
 mouse_pressed :: proc "c" (window: _c.int, button: _c.int, x: _c.int, y: _c.int) {
@@ -155,71 +143,84 @@ gamepad_button :: proc "c" (gamepad: _c.int, button: _c.int, value: _c.float) {
 }
 
 
-VS_SRC := #load("simple.vert.glsl");
-FS_SRC := #load("simple.frag.glsl");
+VS_SRC := #load("../../shared_assets/simple.vert.d3d11");
+FS_SRC := #load("../../shared_assets/simple.frag.d3d11");
 
-pipeline: kinc.Pipeline = ---;
-vertices: kinc.Vertex_Buffer = ---;
-indices: kinc.Index_Buffer = ---;
+DPV :: 9;
+DPT :: DPV * 3;
 
-textures: map[string]kinc.Texture;
+render_context: ^Render_Context;
 
-texture_unit: kinc.Texture_Unit;
-matrix: kinc.Constant_Location;
+Render_Context :: struct {
+	pipeline: ^kinc.Pipeline,
+	vertices: kinc.Vertex_Buffer,
+	indices: kinc.Index_Buffer,
 
-current_triangle := 0;
-current_ptr: ^f32;
-DPT :: 15;
+	textures: map[string]kinc.Texture,
+	texture_unit: kinc.Texture_Unit,
+
+	projection_location: kinc.Constant_Location,
+	camera_location: kinc.Constant_Location,
+
+	current_triangle: int,
+	current_ptr: ^f32,
+}
 
 flush :: proc() {
-	kinc.g4_vertex_buffer_unlock(&vertices, i32(current_triangle)*3);
+	using render_context;
+	if current_triangle != 0 {
+		kinc.g4_vertex_buffer_unlock(&vertices, i32(current_triangle)*3);
 
-	kinc.g4_draw_indexed_vertices_from_to(0, i32(current_triangle)*3);
+		camera_matrix: kinc.Matrix4x4;
+		camera_matrix.m[0] = 1;
+		camera_matrix.m[5] = 1;
+		camera_matrix.m[10] = 1;
+		camera_matrix.m[15] = 1;
 
-	current_triangle = 0;
+		kinc.g4_set_vertex_buffer(&render_context.vertices);
+		kinc.g4_set_index_buffer(&render_context.indices);
+		kinc.g4_set_texture(texture_unit, &textures["tileset"]);
+		kinc.g4_set_matrix4(render_context.projection_location, &projection);
+		kinc.g4_set_matrix4(render_context.camera_location, &camera_matrix);
 
-	current_ptr = kinc.g4_vertex_buffer_lock_all(&vertices);
+		kinc.g4_draw_indexed_vertices_from_to(0, i32(current_triangle)*3);
+
+		current_triangle = 0;
+
+		current_ptr = kinc.g4_vertex_buffer_lock_all(&vertices);
+	}
 }
 
 push_triangle :: proc(x1, y1, x2, y2, x3, y3, u1, v1, u2, v2, u3, v3: f32) {
-	t := DPT * current_triangle;
-	v := current_ptr;
+	using render_context;
 
-	mem.ptr_offset(v, t + 0)^ = x1;
-	mem.ptr_offset(v, t + 1)^ = y1;
-			mem.ptr_offset(v, t + 2)^ = -5;
-		mem.ptr_offset(v, t + 3)^ = u1;
-		mem.ptr_offset(v, t + 4)^ = v1;
-	mem.ptr_offset(v, t + 5)^ = x2;
-	mem.ptr_offset(v, t + 6)^ = y2;
-			mem.ptr_offset(v, t + 7)^ = -5;
-		mem.ptr_offset(v, t + 8)^ = u2;
-		mem.ptr_offset(v, t + 9)^ = v2;
-	mem.ptr_offset(v, t + 10)^ = x3;
-	mem.ptr_offset(v, t + 11)^ = y3;
-			mem.ptr_offset(v, t + 12)^ = -5;
-		mem.ptr_offset(v, t + 13)^ = u3;
-		mem.ptr_offset(v, t + 14)^ = v3;
+	push_vertex(0, x1, y1, u1, v1, 1, 1, 1, 1);
+	push_vertex(9, x2, y2, u2, v2, 1, 1, 1, 1);
+	push_vertex(18, x3, y3, u3, v3, 1, 1, 1, 1);
 
 	current_triangle += 1;
 }
 
-ortho :: proc(left, right, bottom, top, near, far: _c.float) -> kinc.Matrix4x4 {
-	tx := -(right + left) / (right - left);
-	ty := -(top + bottom) / (top - bottom);
-	tz := -(far + near) / (far - near);
+push_vertex :: proc(offset: int, x, y, u, v, r, g, b, a: f32) {
+	using render_context;
+	t := DPT * current_triangle + offset;
 
-	return {
-		[16]_c.float{
-			2 / (right - left), 0, 0, tx,
-			0, 2.0 / (top - bottom), 0, ty,
-			0, 0, -2 / (far - near), tz,
-			0, 0, 0, 1
-		}
-	};
-	
+	mem.ptr_offset(current_ptr, t + 0)^ = x;
+	mem.ptr_offset(current_ptr, t + 1)^ = y;
+	mem.ptr_offset(current_ptr, t + 2)^ = -5;
+	mem.ptr_offset(current_ptr, t + 3)^ = u;
+	mem.ptr_offset(current_ptr, t + 4)^ = v;
+	mem.ptr_offset(current_ptr, t + 5)^ = r;
+	mem.ptr_offset(current_ptr, t + 6)^ = g;
+	mem.ptr_offset(current_ptr, t + 7)^ = b;
+	mem.ptr_offset(current_ptr, t + 8)^ = a;
 }
-projection := ortho(0, 1280, 800, 0, 0.1, 1000);
+
+ortho :: proc(left, right, bottom, top, near, far: _c.float) -> (m:kinc.Matrix4x4) {
+	m.m = transmute([16]_c.float) linalg.matrix_ortho3d(left, right, bottom, top, near, far);
+	return;
+}
+projection := ortho(0.0, 1280.0, 800, 0, 0.1, 1000.0);
 
 key_press :: proc "cdecl" (key: _c.int) {
 	context = runtime.default_context();
@@ -233,51 +234,54 @@ key_down :: proc "c" (key: _c.int) {
 
 init :: proc() {
 
-	// image.h
-	size := kinc.image_size_from_file("assets/tileset.png");
+	render_context = new(Render_Context);
+	render_context.pipeline = new(kinc.Pipeline);
+	using render_context;
+
+	size := kinc.image_size_from_file("../shared_assets/kinc.png");
 	data := mem.alloc(auto_cast size);
 
 	image: kinc.Image;
-	if kinc.image_init_from_file(&image, data, "assets/tileset.png") != 0 {
+	if kinc.image_init_from_file(&image, data, "../shared_assets/kinc.png") != 0 {
 		textures["tileset"] = {};
 		kinc.g4_texture_init_from_image(&textures["tileset"], &image);
+		fmt.println(image.width, image.height);
 	}
 
 	kinc.mouse_press_callback^ = mouse_pressed;
-	/* fmt.println(kinc.keyboard_key_down_callback);//= key_press; */
-	//kinc.gamepad_axis_callback = gamepad_axis;
-	//kinc.window_set_resize_callback = window_resize;
-	/* kinc.gamepad_button_callback = gamepad_button; */
 	kinc.keyboard_key_down_callback^ = key_down;
 
-	vertex_shader: kinc.Shader = ---;
+	vertex_shader := new(kinc.Shader); //= ---;
 	{
-		kinc.g4_shader_init(&vertex_shader, &VS_SRC[0], auto_cast len(VS_SRC), .VERTEX);
+		kinc.g4_shader_init(vertex_shader, &VS_SRC[0], auto_cast len(VS_SRC), .VERTEX);
 	}
 
-	fragment_shader: kinc.Shader = ---;
+	fragment_shader:= new(kinc.Shader); //= ---;
 	{
-		kinc.g4_shader_init(&fragment_shader, &FS_SRC[0], auto_cast len(FS_SRC), .FRAGMENT);
+		kinc.g4_shader_init(fragment_shader, &FS_SRC[0], auto_cast len(FS_SRC), .FRAGMENT);
 	}
 
-	structure: kinc.Vertex_Structure;
-	kinc.g4_vertex_structure_init(&structure);
-	kinc.g4_vertex_structure_add(&structure, "pos", .FLOAT3);
-	kinc.g4_vertex_structure_add(&structure, "uv", .FLOAT2);
+	structure := new(kinc.Vertex_Structure);
+	kinc.g4_vertex_structure_init(structure);
+	kinc.g4_vertex_structure_add(structure, "pos", .FLOAT3);
+	kinc.g4_vertex_structure_add(structure, "uv", .FLOAT2);
+	kinc.g4_vertex_structure_add(structure, "color", .FLOAT4);
 
-	kinc.g4_pipeline_init(&pipeline);
-	pipeline.vertex_shader = &vertex_shader;
-	pipeline.fragment_shader = &fragment_shader;
-	pipeline.input_layout[0] = &structure;
+	kinc.g4_pipeline_init(pipeline);
+	pipeline.vertex_shader = vertex_shader;
+	pipeline.fragment_shader = fragment_shader;
+	pipeline.input_layout[0] = structure;
 	pipeline.input_layout[1] = nil;
-	kinc.g4_pipeline_compile(&pipeline);
+	kinc.g4_pipeline_compile(pipeline);
+	fmt.println(pipeline);
 	
-	texture_unit = kinc.g4_pipeline_get_texture_unit(&pipeline, "texture");
-	matrix = kinc.g4_pipeline_get_constant_location(&pipeline, "projection");
+	texture_unit = kinc.g4_pipeline_get_texture_unit(pipeline, "tex");
+	projection_location = kinc.g4_pipeline_get_constant_location(pipeline, "projection");
+	camera_location = kinc.g4_pipeline_get_constant_location(pipeline, "camera");
 
-	kinc.g4_vertex_buffer_init(&vertices, 1000 * 3, &structure, .DYNAMIC, 0);
+	kinc.g4_vertex_buffer_init(&vertices, 1000 * 3, structure, .DYNAMIC, 0);
 	current_ptr = kinc.g4_vertex_buffer_lock_all(&vertices);
-	/* vertices.impl.initialized = true; */
+	//vertices.impl.initialized = true;
 
 	kinc.g4_index_buffer_init(&indices, 1000 * 3, .FORMAT_32BIT);
 	i := kinc.g4_index_buffer_lock(&indices);
@@ -329,9 +333,10 @@ main :: proc() {
 
 
 	frame_time = new(Frame_Time);
-	kinc.set_update_callback(auto_cast internal_update);
+
 
 	init();
+	kinc.set_update_callback(auto_cast internal_update);
 
 	last = kinc.time();
 	kinc.start();

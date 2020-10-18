@@ -7,7 +7,7 @@ Graphics_Api :: enum {
 	GL,
 }
 
-GRAPHICS_API :: Graphics_Api.GL;
+GRAPHICS_API :: Graphics_Api.DX11;
 
 // -----------------------------------------------------------------------------
 //
@@ -576,7 +576,7 @@ Usage :: enum _c.int {
 // -----------------------------------------------------------------------------
 MAX_VERTEX_ELEMENTS :: 16;
 
-Vertex_Data :: enum _c.int {
+Vertex_Data :: enum i32 {
 	NONE,
 	FLOAT1,
 	FLOAT2,
@@ -603,7 +603,7 @@ Vertex_Structure :: struct  {
 // pipeline.h
 //
 // -----------------------------------------------------------------------------
-Blending_Operation :: enum _c.int {
+Blending_Operation :: enum i32 {
 	ONE,
 	ZERO,
 	SOURCE_ALPHA,
@@ -615,7 +615,7 @@ Blending_Operation :: enum _c.int {
 	INV_SOURCE_COLOR,
 	INV_DEST_COLOR,
 }
-Compare_Mode :: enum _c.int {
+Compare_Mode :: enum i32 {
 	ALWAYS,
 	NEVER,
 	EQUAL,
@@ -625,12 +625,12 @@ Compare_Mode :: enum _c.int {
 	GREATER,
 	GREATER_EQUAL,
 }
-Cull_Mode :: enum _c.int {
+Cull_Mode :: enum i32 {
 	CLOCKWISE,
 	COUNTER_CLOCKWISE,
 	NOTHING,
 }
-Stencil_Action :: enum _c.int {
+Stencil_Action :: enum i32 {
 	KEEP,
 	ZERO,
 	REPLACE,
@@ -658,6 +658,7 @@ Pipeline :: struct  {
 	stencil_both_pass: Stencil_Action,
 	stencil_depth_fail: Stencil_Action,
 	stencil_fail: Stencil_Action,
+
 	stencil_reference_value: _c.int,
 	stencil_read_mask: _c.int,
 	stencil_write_mask: _c.int,
@@ -852,10 +853,10 @@ when GRAPHICS_API == .DX11 {
 		index: u32,
 	}
 	Shader_Impl :: struct {
-		constants: [64] IShader_Constant,
+		constants: [64] IShader_Constant, // 64
 		constants_size: _c.int,
-		attributes: [64] IHash_Index,
-		textures: [64] IHash_Index,
+		attributes: [64]IHash_Index, // 64
+		textures: [64]IHash_Index, // 64
 		shader: rawptr,
 		data: ^u8,
 		length: _c.int,
@@ -923,15 +924,16 @@ when GRAPHICS_API == .DX11 {
 		view: rawptr,
 		compute_view: rawptr,
 		render_view: rawptr,
+		row_pitch: _c.int,
 	}
 	Render_Target_Impl :: struct {
 		texture_render: rawptr,
 		texture_sample: rawptr,
 		texture_staging: rawptr,
 		render_target_view_render: [6]rawptr, // [6]
-		render_target_view_sample: [6]rawptr,
+		render_target_view_sample: [6]rawptr, // [6]
 		depth_stencil: rawptr,
-		depth_stencil_view: [6]rawptr,
+		depth_stencil_view: [6]rawptr, // [6]
 		render_target_srv: rawptr,
 		depth_stencil_srv: rawptr,
 		format: _c.int,

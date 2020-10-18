@@ -3,7 +3,11 @@ package kinc;
 import _c "core:c"
 
 when ODIN_OS == "windows" {
-	foreign import kinc "../../kinc_windows/Kinc.lib"
+	when GRAPHICS_API == .GL {
+		//foreign import kinc "../kinc_bin/Kinc.lib"
+	} else when GRAPHICS_API == .DX11 {
+		foreign import kinc "../kinc_bin/Kinc_D3D11.lib"
+	}
 } else {
 	foreign import kinc "kinc_linux/Kinc.so"
 };
@@ -55,8 +59,6 @@ foreign kinc {
 	frequency :: proc () -> _c.double ---;
 	// kinc_ticks_t kinc_timestamp()
 	time :: proc () -> _c.double ---;
-	
-	run :: proc (value: rawptr) ---;
 
 	start :: proc () ---;
 	stop :: proc () ---;
@@ -123,7 +125,7 @@ foreign kinc {
 	image_init_from_bytes3d :: proc(image: ^Image, data: rawptr, width: _c.int, height: _c.int, depth: _c.int, format: Image_Format) ---;
 	image_destroy :: proc(image: ^Image) ---;
 	image_at :: proc(image: ^Image, x: _c.int, y: _c.int) ---;
-	image_get_pixels :: proc(image: ^Image) -> u8 ---; //uint8_t i hope is u8
+	image_get_pixels :: proc(image: ^Image) -> ^u8 ---; //uint8_t i hope is u8
 
 	image_format_sizeof :: proc(format: Image_Format) -> _c.int ---;
 	// -----------------------------------------------------------------------------
@@ -169,12 +171,12 @@ foreign kinc {
 	// audio2.h
 	//
 	// -----------------------------------------------------------------------------
-	audio2_init :: proc() ---;
-	audio2_set_callback :: proc(callback: Audio2_Callback) ---;
-	audio2_set_sample_rate_callback :: proc(callback: Audio2_Sample_Rate_Callback) ---;
-	audio2_samples_per_second: _c.int;
-	audio2_update :: proc() ---;
-	audio2_shutdown :: proc() ---;
+	a2_init :: proc() ---;
+	a2_set_callback :: proc(callback: Audio2_Callback) ---;
+	a2_set_sample_rate_callback :: proc(callback: Audio2_Sample_Rate_Callback) ---;
+	a2_samples_per_second: _c.int;
+	a2_update :: proc() ---;
+	a2_shutdown :: proc() ---;
 	// -----------------------------------------------------------------------------
 	//
 	// vrinterface.h
@@ -277,30 +279,30 @@ foreign kinc {
 	file_reader_seek :: proc(reader: ^File_Reader, pos: _c.int) ---;
 
 	//uint8_t = u8
-	file_read_f32le :: proc(data: ^u8) -> _c.float ---;
-	file_read_f32be :: proc(data: ^u8) -> _c.float ---;
+	read_f32le :: proc(data: ^u8) -> _c.float ---;
+	read_f32be :: proc(data: ^u8) -> _c.float ---;
 
 	// u64 = uint64_t
-	file_read_u64le :: proc(data: ^u8) -> u64 ---;
-	file_read_u64be :: proc(data: ^u8) -> u64 ---;
+	read_u64le :: proc(data: ^u8) -> u64 ---;
+	read_u64be :: proc(data: ^u8) -> u64 ---;
 
-	file_read_s64le :: proc(data: ^u8) -> i64 ---;
-	file_read_s64be :: proc(data: ^u8) -> i64 ---;
+	read_s64le :: proc(data: ^u8) -> i64 ---;
+	read_s64be :: proc(data: ^u8) -> i64 ---;
 
-	file_read_u32le :: proc(data: ^u8) -> u32 ---;
-	file_read_u32be :: proc(data: ^u8) -> u32 ---;
+	read_u32le :: proc(data: ^u8) -> u32 ---;
+	read_u32be :: proc(data: ^u8) -> u32 ---;
 
-	file_read_s32le :: proc(data: ^u8) -> i32 ---;
-	file_read_s32be :: proc(data: ^u8) -> i32 ---;
+	read_s32le :: proc(data: ^u8) -> i32 ---;
+	read_s32be :: proc(data: ^u8) -> i32 ---;
 
-	file_read_u16le :: proc(data: ^u8) -> u16 ---;
-	file_read_u16be :: proc(data: ^u8) -> u16 ---;
+	read_u16le :: proc(data: ^u8) -> u16 ---;
+	read_u16be :: proc(data: ^u8) -> u16 ---;
 
-	file_read_s16le :: proc(data: ^u8) -> i16 ---;
-	file_read_s16be :: proc(data: ^u8) -> i16 ---;
+	read_s16le :: proc(data: ^u8) -> i16 ---;
+	read_s16be :: proc(data: ^u8) -> i16 ---;
 
-	file_read_u8 :: proc(data: ^u8) -> u8 ---;
-	file_read_i8 :: proc(data: ^u8) -> i8 ---;
+	read_u8 :: proc(data: ^u8) -> u8 ---;
+	read_i8 :: proc(data: ^u8) -> i8 ---;
 	// -----------------------------------------------------------------------------
 	//
 	// keyboard.h
@@ -548,21 +550,21 @@ foreign kinc {
 	// sound.h
 	//
 	// -----------------------------------------------------------------------------
-	audio1_sound_create :: proc(filename: cstring) -> ^Audio1_Sound ---;
-	audio1_sound_destroy :: proc(sound: ^Audio1_Sound) ---;
-	audio1_sound_volume :: proc(sound: ^Audio1_Sound) -> _c.float ---;
-	audio1_sound_set_volume :: proc(sound: ^Audio1_Sound, value: _c.float) ---;
+	a1_sound_create :: proc(filename: cstring) -> ^Audio1_Sound ---;
+	a1_sound_destroy :: proc(sound: ^Audio1_Sound) ---;
+	a1_sound_volume :: proc(sound: ^Audio1_Sound) -> _c.float ---;
+	a1_sound_set_volume :: proc(sound: ^Audio1_Sound, value: _c.float) ---;
 	// -----------------------------------------------------------------------------
 	//
 	// audio1/audio.h
 	//
 	// -----------------------------------------------------------------------------
-	audio1_init :: proc() ---;
-	audio1_play_sound :: proc(sound: ^Audio1_Sound, loop: _c.bool, pitch: _c.float, unique: _c.bool) -> Audio1_Channel ---;
+	a1_init :: proc() ---;
+	a1_play_sound :: proc(sound: ^Audio1_Sound, loop: _c.bool, pitch: _c.float, unique: _c.bool) -> Audio1_Channel ---;
 
-	audio1_stop_sound :: proc(sound: ^Audio1_Sound) ---;
-	audio1_play_sound_stream :: proc(stream: ^Audio1_Sound_Stream) ---;
-	audio1_stop_sound_stream :: proc(stream: ^Audio1_Sound_Stream) ---;
+	a1_stop_sound :: proc(sound: ^Audio1_Sound) ---;
+	a1_play_sound_stream :: proc(stream: ^Audio1_Sound_Stream) ---;
+	a1_stop_sound_stream :: proc(stream: ^Audio1_Sound_Stream) ---;
 	/* audio1_play_video_sound_stream :: proc(stream: ^Audio1_Video_Sound_Stream) ---; */
 	/* audio1_stop_video_sound_stream :: proc(stream: ^Audio1_Video_Sound_Stream) ---; */
 	// -----------------------------------------------------------------------------
@@ -570,18 +572,18 @@ foreign kinc {
 	// soundstream.h
 	//
 	// -----------------------------------------------------------------------------
-	audio1_sound_stream_create :: proc(filename: cstring, looping: _c.bool) -> ^Audio1_Sound_Stream ---;
-	audio1_sound_stream_next_sample :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
-	audio1_sound_stream_channels :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
-	audio1_sound_stream_sample_rate :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
-	audio1_sound_stream_looping :: proc(stream: ^Audio1_Sound_Stream) -> _c.bool ---;
-	audio1_sound_stream_set_looping :: proc(stream: ^Audio1_Sound_Stream, loop: _c.bool) ---;
-	audio1_sound_stream_ended :: proc(stream: ^Audio1_Sound_Stream) -> _c.bool ---;
-	audio1_sound_stream_length :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
-	audio1_sound_stream_position :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
-	audio1_sound_stream_reset :: proc(stream: ^Audio1_Sound_Stream) ---;
-	audio1_sound_stream_volume :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
-	audio1_sound_stream_set_volume :: proc(stream: ^Audio1_Sound_Stream, value: _c.float) ---;
+	a1_sound_stream_create :: proc(filename: cstring, looping: _c.bool) -> ^Audio1_Sound_Stream ---;
+	a1_sound_stream_next_sample :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	a1_sound_stream_channels :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	a1_sound_stream_sample_rate :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	a1_sound_stream_looping :: proc(stream: ^Audio1_Sound_Stream) -> _c.bool ---;
+	a1_sound_stream_set_looping :: proc(stream: ^Audio1_Sound_Stream, loop: _c.bool) ---;
+	a1_sound_stream_ended :: proc(stream: ^Audio1_Sound_Stream) -> _c.bool ---;
+	a1_sound_stream_length :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	a1_sound_stream_position :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	a1_sound_stream_reset :: proc(stream: ^Audio1_Sound_Stream) ---;
+	a1_sound_stream_volume :: proc(stream: ^Audio1_Sound_Stream) -> _c.float ---;
+	a1_sound_stream_set_volume :: proc(stream: ^Audio1_Sound_Stream, value: _c.float) ---;
 
 
 
