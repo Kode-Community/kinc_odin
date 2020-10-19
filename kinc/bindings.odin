@@ -341,7 +341,7 @@ foreign kinc {
 	mouse_show :: proc() ---;
 	mouse_hide :: proc() ---;
 	mouse_set_position :: proc(window: _c.int, x: _c.int, y: _c.int) ---;
-	mouse_get_positiion :: proc(window: _c.int, x: ^_c.int, y: ^_c.int) ---;
+	mouse_get_position :: proc(window: _c.int, x: ^_c.int, y: ^_c.int) ---;
 
 
 	@(link_name="__imp_kinc_mouse_press_callback")
