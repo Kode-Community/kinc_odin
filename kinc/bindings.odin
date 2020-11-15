@@ -6,7 +6,7 @@ when ODIN_OS == "windows" {
 	when GRAPHICS_API == .GL {
 		//foreign import kinc "../kinc_bin/Kinc.lib"
 	} else when GRAPHICS_API == .DX11 {
-		foreign import kinc "../kinc_bin/Kinc_D3D11.lib"
+		foreign import kinc "../kinc_bin/D3D11/dll/Kinc.lib"
 	}
 } else {
 	foreign import kinc "kinc_linux/Kinc.so"
